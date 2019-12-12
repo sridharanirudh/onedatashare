@@ -44,8 +44,11 @@ import {
 } from "../../model/actions";
 import { cookies } from "../../model/reducers";
 import { DROPBOX_NAME, GOOGLEDRIVE_NAME } from "../../constants";
-
 import {updateGAPageView} from '../../analytics/ga'
+import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@material-ui/icons/VisibilityOffOutlined';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
 
 export default class UserAccountComponent extends Component {
 	constructor() {
@@ -63,7 +66,10 @@ export default class UserAccountComponent extends Component {
 			openAlertDialog: false,
 			saveOAuthTokens: false,
 			validations: validatePassword("", ""),
-      canSubmit: false
+			canSubmit: false,
+			isOldPwdVisible: false,
+			isNewPwdVisible: false,
+			isConfirmPwdVisible: false
     	};
     	getUser(this.state.userEmail,  (resp) => {
             //success
@@ -85,6 +91,8 @@ export default class UserAccountComponent extends Component {
 		this.handleAccountPreferenceToggle = this.handleAccountPreferenceToggle.bind(this);
 		this.handleAlertClose = this.handleAlertClose.bind(this);
 		this.handleAlertCloseYes = this.handleAlertCloseYes.bind(this);
+		this.handleShowPassword = this.handleShowPassword.bind(this);
+		this.handleHidePassword = this.handleHidePassword.bind(this);
 		updateGAPageView();
 	}
 
@@ -159,6 +167,29 @@ export default class UserAccountComponent extends Component {
 			//Update the variables
 			this.setState({ saveOAuthTokens: currentSaveStatus });
 		});
+	}
+
+	handleShowPassword(field) {
+		console.info('handleShowPassword::Enter')
+		switch(field){
+			case 'old': 
+				this.setState({isOldPwdVisible: true}); 
+				break;
+			case 'new': 
+				this.setState({isNewPwdVisible: true}); 
+				break;
+			case 'confirm': 
+				this.setState({isConfirmPwdVisible: true}); 
+				break;
+		}
+		this.setState({isPasswordVisible: true});
+		console.info('handleShowPassword::Exit')
+	}
+
+	handleHidePassword() {
+		console.info('handleHidePassword::Enter')
+		this.setState({isConfirmPwdVisible: false, isOldPwdVisible: false, isNewPwdVisible: false});
+		console.info('handleHidePassword::Enter')
 	}
 
 	accountDetails() {
@@ -308,26 +339,65 @@ export default class UserAccountComponent extends Component {
 				<TextField
 					id="Email"
 					label="Enter Your Old Password"
-					type="password"
+					type={this.state.isOldPwdVisible? "text":"password"}
 					value={this.state.oldPassword}
 					style={{ width: "100%", marginBottom: "1em" }}
 					onChange={handleChange("oldPassword")}
+					InputProps={{
+						endAdornment: <React.Fragment>
+							<InputAdornment position="end">
+							<IconButton
+								aria-label="toggle password visibility"
+								onMouseDown={() => this.handleShowPassword('old')}
+								onMouseUp={this.handleHidePassword}
+							>
+                  			{this.state.isOldPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                			</IconButton>
+							</InputAdornment>
+							</React.Fragment>
+					}}
 				/>
 				<TextField
 					label="Enter Your New Password"
-					type="password"
+					type={this.state.isNewPwdVisible? "text":"password"}
 					value={this.state.newPassword}
 					style={{ width: "100%", marginBottom: "1em" }}
 					onChange={passwordCheck("newPassword")}
+					InputProps={{
+						endAdornment: <React.Fragment>
+							<InputAdornment position="end">
+							<IconButton
+								aria-label="toggle password visibility"
+								onMouseDown={() => this.handleShowPassword('new')}
+								onMouseUp={this.handleHidePassword}
+							>
+                  			{this.state.isNewPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                			</IconButton>
+							</InputAdornment>
+							</React.Fragment>
+					}}
 				/>
 				<TextField
 					error={confirmed}
 					id="Cpassword"
-					type="password"
+					type={this.state.isConfirmPwdVisible? "text":"password"}
 					label="Confirm Your New Password"
 					value={this.state.confirmNewPassword}
 					style={{ width: "100%", marginBottom: "1em" }}
 					onChange={passwordCheck("confirmNewPassword")}
+					InputProps={{
+						endAdornment: <React.Fragment>
+							<InputAdornment position="end">
+							<IconButton
+								aria-label="toggle password visibility"
+								onMouseDown={() => this.handleShowPassword('confirm')}
+								onMouseUp={this.handleHidePassword}
+							>
+                  			{this.state.isConfirmPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                			</IconButton>
+							</InputAdornment>
+							</React.Fragment>
+					}}
 				/>
 				<PasswordRequirementsComponent
           showList = {!this.state.canSubmit}

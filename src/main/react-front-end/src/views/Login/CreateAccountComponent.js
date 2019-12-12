@@ -18,8 +18,11 @@ import { eventEmitter } from "../../App";
 import ReCAPTCHA from 'react-google-recaptcha';
 
 import { ValidatorForm, TextValidator } from 'react-material-ui-form-validator';
-
 import { updateGAPageView } from "../../analytics/ga";
+import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@material-ui/icons/VisibilityOffOutlined';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
 
 export default class CreateAccountComponent extends Component {
   static propTypes = {
@@ -52,7 +55,9 @@ export default class CreateAccountComponent extends Component {
       captchaVerificationValue: null,
       confirmation: false,
       validations: validatePassword("", ""),
-      canSubmit: false
+      canSubmit: false,
+      isPwdVisible: false,
+      isReEnterPwdVisible: false
     }
     this.firstNameValidationMsg = "Please Enter Your First Name"
     this.lastNameValidationMsg = "Please Enter Your Last Name"
@@ -66,6 +71,8 @@ export default class CreateAccountComponent extends Component {
     updateGAPageView();
     this.handleCaptchaEvent = this.handleCaptchaEvent.bind(this);
     this.resetCaptcha = this.resetCaptcha.bind(this);
+    this.handleShowPassword = this.handleShowPassword.bind(this);
+    this.handleHidePassword = this.handleHidePassword.bind(this);
   }
 
   registerAccount() {
@@ -157,6 +164,24 @@ export default class CreateAccountComponent extends Component {
     }
   }
 
+  handleShowPassword(field) {
+    console.info('handleShowPassword::Enter')
+		switch(field){
+			case 'enter': 
+        this.setState({isPwdVisible: true});
+        break;
+		  case 'reenter': 
+				this.setState({isReEnterPwdVisible: true}); 
+				break;
+    }
+		console.info('handleShowPassword::Exit')
+	}
+
+	handleHidePassword() {
+		console.info('handleHidePassword::Enter')
+		this.setState({isPwdVisible: false, isReEnterPwdVisible: false});
+		console.info('handleHidePassword::Enter')
+	}
 
   render() {
     const { emailError, emailErrorMessage, email, firstNameError,
@@ -331,20 +356,45 @@ export default class CreateAccountComponent extends Component {
           <TextField
             id="Password"
             label="Password"
-            type="password"
+            type={this.state.isPwdVisible ? "text" : "password"}
             value={this.state.password}
             style={{ width: '100%', marginBottom: '30px' }}
             onChange={passwordCheck('password')}
+            InputProps={{
+              endAdornment: <React.Fragment>
+                <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onMouseDown={() => this.handleShowPassword('enter')}
+                  onMouseUp={this.handleHidePassword}
+                >
+                  {this.state.isPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                  </IconButton>
+                </InputAdornment>
+                </React.Fragment>
+            }}
           />
-
           <TextField
             id="Cpassword"
-            type="password"
+            type={this.state.isReEnterPwdVisible ? "text" : "password"}
             label={this.state.passwordError === "Password Doesn't Match" ? "Password Doesn't Match" : "Confirm Password"}
             value={this.state.cpassword}
             style={{ width: '100%', marginBottom: '30px' }}
             onChange={passwordCheck('cpassword')}
             error={this.state.passwordError === "Password Doesn't Match"}
+            InputProps={{
+              endAdornment: <React.Fragment>
+                <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onMouseDown={() => this.handleShowPassword('reenter')}
+                  onMouseUp={this.handleHidePassword}
+                >
+                {this.state.isReEnterPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+                </IconButton>
+                </InputAdornment>
+                </React.Fragment>
+            }}
           />
         <PasswordRequirementsComponent
           showList = {!this.state.canSubmit}

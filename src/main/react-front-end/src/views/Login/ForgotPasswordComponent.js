@@ -10,6 +10,10 @@ import {updateGAPageView} from "../../analytics/ga";
 import {spaceBetweenStyle} from '../../constants.js';
 import {resetPasswordSendCode, resetPasswordVerifyCode, resetPassword} from '../../APICalls/APICalls.js';
 import {eventEmitter} from '../../App';
+import VisibilityOutlinedIcon from '@material-ui/icons/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@material-ui/icons/VisibilityOffOutlined';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@material-ui/core/IconButton';
 const beforeCode = 0
 const codeSent = 1
 const codeVerified = 2
@@ -27,9 +31,13 @@ export default class ForgotPasswordComponent extends Component {
 	    	password: "",
 	    	confirmedPassword: "",
 	    	state: beforeCode,
-	    	code: "",
+			code: "",
+			isPwdVisible: false,
+      		isReEnterPwdVisible: false
 		}
 		updateGAPageView();
+		this.handleShowPassword = this.handleShowPassword.bind(this);
+		this.handleHidePassword = this.handleHidePassword.bind(this);
 	}
 
 	SetPassword = ()=>{
@@ -66,6 +74,26 @@ export default class ForgotPasswordComponent extends Component {
 			eventEmitter.emit("errorOccured", "Send Code Failed.");
 		});   	
 	}
+
+	handleShowPassword(field) {
+		console.info('handleShowPassword::Enter')
+		switch(field){
+			case 'enter': 
+				this.setState({isPwdVisible: true});
+				break;
+			case 'reenter': 
+				this.setState({isReEnterPwdVisible: true}); 
+				break;
+		}
+		console.info('handleShowPassword::Exit')
+	}
+
+	handleHidePassword() {
+		console.info('handleHidePassword::Enter')
+		this.setState({isPwdVisible: false, isReEnterPwdVisible: false});
+		console.info('handleHidePassword::Enter')
+	}
+
 	render(){
 		const {back, email} = this.props
 		const {state, confirmedPassword, password} = this.state;
@@ -145,10 +173,23 @@ export default class ForgotPasswordComponent extends Component {
 			          id="outlined-email-input"
 			          label="Password"
 			          name="code"
-			          type="password"
+			          type={this.state.isPwdVisible ? "text" : "password"}
 			          margin="normal"
 			          variant="outlined"
-			          onChange={handleChange('password')}
+					  onChange={handleChange('password')}
+					  InputProps={{
+						endAdornment: <React.Fragment>
+						  <InputAdornment position="end">
+						  <IconButton
+							aria-label="toggle password visibility"
+							onMouseDown={() => this.handleShowPassword('enter')}
+							onMouseUp={this.handleHidePassword}
+						  >
+							{this.state.isPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+							</IconButton>
+						  </InputAdornment>
+						  </React.Fragment>
+					  }}
 			        />
 			        <TextField
 			          error={confirmed}
@@ -156,10 +197,23 @@ export default class ForgotPasswordComponent extends Component {
 			          id="outlined-email-input"
 			          label="Confirm Password"
 			          name="code"
-			          type="password"
+			          type={this.state.isReEnterPwdVisible ? "text" : "password"}
 			          margin="normal"
 			          variant="outlined"
-			          onChange={handleChange('confirmedPassword')}
+					  onChange={handleChange('confirmedPassword')}
+					  InputProps={{
+						endAdornment: <React.Fragment>
+						  <InputAdornment position="end">
+						  <IconButton
+							aria-label="toggle password visibility"
+							onMouseDown={() => this.handleShowPassword('reenter')}
+							onMouseUp={this.handleHidePassword}
+						  >
+						  {this.state.isReEnterPwdVisible ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />}
+						  </IconButton>
+						  </InputAdornment>
+						  </React.Fragment>
+					  }}
 			        />
 			        <CardActions style={spaceBetweenStyle}>
 				        <Button size="medium" variant="outlined" color="primary" onClick={back}>
