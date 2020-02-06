@@ -24,6 +24,9 @@ import UploaderWrapper from "./UploaderWrapper.js";
 
 import React, { Component } from 'react';
 
+import FolderIcon from "@material-ui/icons/Folder";
+import FileIcon from "@material-ui/icons/Note";
+
 import {
 	listFiles,
 	mkdir,
@@ -646,35 +649,23 @@ export default class EndpointBrowseComponent extends Component {
 								onClick={this.fileNodeClicked}
 								onDoubleClick={this.fileNodeDoubleClicked}
 								toggleSelectionInGroup={this.toggleSelectionInGroup}
-					            multiSelectTo={this.multiSelectTo}
+								multiSelectTo={this.multiSelectTo}
 							/>
 						}
 
-
-						{displayStyle === "comfort" && displayList.map((fileId, index) => {
-							const file = list[fileId];
-							const isSelected = Boolean(selectedTasks.indexOf(file)!==-1);
-			        const isGhosting = isSelected && Boolean(draggingTask) && draggingTask.name !== file.name;
-
-							return(
-								<FileNode
-									key={fileId}
-									index={index}
-									file={file}
-									id={fileId}
-									fileId={fileId}
+						{displayStyle === 'comfort' && <GridView
+									list={list}
+									displayList={displayList}
 									selectionCount={selectedTasks.length}
 									onClick={this.fileNodeClicked}
 									onDoubleClick={this.fileNodeDoubleClicked}
 									side={endpoint.side}
-									isSelected={isSelected}
 									endpoint={endpoint}
-									isGhosting={isGhosting}
 									toggleSelection={this.toggleSelection}
 									toggleSelectionInGroup={this.toggleSelectionInGroup}
 									multiSelectTo={this.multiSelectTo}
-							/>);
-						})}
+							/>
+						}
 						{provided.placeHolder}
 					</div>
 				)}
@@ -683,4 +674,68 @@ export default class EndpointBrowseComponent extends Component {
 	}
 }
 
+class GridView extends Component {
+	constructor(props) {
+		super(props)
+		this.state = {
+			selected: []
+		}
+	}
+	populateRows() {
+		const { displayList, list } = this.props
+		const numCols = 3
+		let diff = numCols - (displayList.length % numCols)
+		let normalizedDisplayList = displayList.slice(0)
 
+		if (diff > 0 && diff !== numCols) {
+			for (let k = 0; k < diff; k++) {
+				normalizedDisplayList.push(null)
+			}
+		}
+
+		let rows = []
+		let cols = []
+
+		normalizedDisplayList.forEach((fileId, i) => {
+			if (i % numCols === 0) {
+				if (i > 0) {
+					rows.push(<tr key={i}>{cols}</tr>)
+				}
+				cols = []
+			}
+			cols.push(this.colNode(list[fileId]))
+		})
+		if (cols.length > 0) {
+			rows.push(<tr>{cols}</tr>)
+		}
+		return rows
+	}
+	colNode(file) {
+		return file ? <GridFileComponent key={file.id} file={file}/> : <td></td>
+	}
+	render() {
+		console.log(this.props)
+		return <div>
+			<table>
+				<tbody>
+					{this.populateRows()}
+				</tbody>
+			</table>
+		</div>
+	}
+}
+
+
+class GridFileComponent extends Component {
+	render() {
+		const { file } = this.props
+		return <td style={{textAlign: 'center'}}>
+			<div className="row">
+				<FolderIcon/>
+			</div>
+			<div className="row">
+				{file.name}
+			</div>
+		</td>
+	}
+}
